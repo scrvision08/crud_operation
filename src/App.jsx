@@ -1,83 +1,239 @@
-import { useState } from 'react'
-import './App.css'
+import { useState, useEffect } from "react";
+import "./App.css";
 
 function App() {
-  const [name, setName] = useState('')
-  const [lastName, setLastName] = useState('')
-  const [mobileNumber, setMobileNumber] = useState('')
-  const [course, setCourse] = useState('')
-  const [gender, setGender] = useState('')
+  const [formData, setFormData] = useState({
+    firstname: "",
+    lastName: "",
+    mobile: "",
+    course: "",
+    gender: "",
+  });
+  const [studentData, setStudentData] = useState(()=>{
+    const savedData = localStorage.getItem("studentData");
+    return savedData ? JSON.parse(savedData) : [];
+  });
+  const [toast, setToast] = useState("");
+  const [editId, setEditId] = useState(null);
+
+  const showToast = (message) => {
+    setToast(message);
+    setTimeout(() => {
+      setToast("");
+    }, 2000);
+  };
 
   const handleSubmit = (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    const formData = { name, lastName, mobileNumber, course, gender };
-    const existingData = JSON.parse(localStorage.getItem('users')) || [];
-    localStorage.setItem('users', JSON.stringify([...existingData, formData]));
-    
-    setName('');
-    setLastName('');
-    setMobileNumber('');
-    setCourse('');
-    setGender('');
+    const mobileRegex = /^[0-9]{10}$/;
+    if (!mobileRegex.test(formData.mobile)) {
+      alert("Please enter a valid 10-digit mobile number.");
+      return;
+    }
 
+    if (editId) {
+      setStudentData(
+        studentData.map((student) => {
+          if (student.id !== editId) return student;
+          const updated = { ...student };
 
+          Object.keys(formData).forEach((key) => {
+            if (formData[key] !== student[key]) {
+              updated[key] = formData[key];
+            }
+          });
+          return updated;
+        }),
+      );
+      setEditId(null);
+      showToast("Record updated successfully!");
+    } else {
+      setStudentData((prev)=>[
+        ...prev,
+        {
+          id: Date.now(),
+          ...formData,
+        },
+      ]);
+      showToast("Record Created successfully!");
+    }
+    setFormData({
+      firstname: "",
+      lastName: "",
+      mobile: "",
+      course: "",
+      gender: "",
+    });
+  };
 
-  }
-  
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+  useEffect(() => {
+    const storedData = JSON.parse(localStorage.getItem("studentData")) || [];
+    setStudentData(storedData);
+  }, []);
+  useEffect(() => {
+    localStorage.setItem("studentData", JSON.stringify(studentData));
+  }, [studentData]);
+
+  const handleDelete = (id) => {
+    console.log(id);
+    console.log(studentData);
+    if (window.confirm("Are you sure you want to delete this record?")) {
+      setStudentData(studentData.filter((student) => student.id !== id));
+
+      showToast("Record deleted successfully!");
+    }
+  };
+
+  const handleEdit = (student) => {
+    setEditId(student.id);
+    setFormData({
+      firstname: student.firstname,
+      lastName: student.lastName,
+      mobile: student.mobile,
+      course: student.course,
+      gender: student.gender,
+    });
+  };
 
   return (
     <>
-      <h1 className='counter'>form</h1>
+      <div className="hero">
+        <div className="glass-card">
+          <h1 className="counter gradient-text">Student Form</h1>
 
-     <form onSubmit={handleSubmit} className='form-data'>
-        <div className='form-group'>
-          <input
-            className='form-field'
-            type="text"
-            placeholder='First Name'
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-        </div>
-        
-        <div className='form-group'>
-          <input
-            className='form-field'
-            type="text"
-            placeholder='Last Name'
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-            required
-          />
+          <form onSubmit={handleSubmit} className="form-data app-container">
+            <div className="form-group">
+              <label>
+                First Name:
+                <input
+                  className="form-field"
+                  name="firstname"
+                  type="text"
+                  placeholder="First Name"
+                  value={formData.firstname}
+                  onChange={handleChange}
+                  required
+                />
+              </label>
+            </div>
+
+            <div className="form-group">
+              <label>
+                Last Name:
+                <input
+                  className="form-field"
+                  name="lastName"
+                  type="text"
+                  placeholder="Last Name"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  required
+                />
+              </label>
+            </div>
+
+            <div className="form-group">
+              <label>
+                Mobile Number:
+                <input
+                  className=""
+                  name="mobile"
+                  maxLength={10}
+                  type="tel"
+                  placeholder="Mobile Number"
+                  value={formData.mobile}
+                  onChange={handleChange}
+                  required
+                />
+              </label>
+            </div>
+
+            <div className="form-group">
+              <label>
+                Course:
+                <select
+                  className="hero"
+                  name="course"
+                  id="course"
+                  value={formData.course}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Select Course</option>
+                  <option value="Web Developer">Web Developer</option>
+                  <option value="App Developer">App Developer</option>
+                  <option value="Data Scientist">Data Scientist</option>
+                  <option value="AI Engineer">AI Engineer</option>
+                  <option value="Other">Other</option>
+                </select>
+              </label>
+            </div>
+
+            <div className="radio-group">
+              <label>
+              <h3>Gender:</h3>
+                <input
+                  type="radio"
+                  name="gender"
+                  value="Male"
+                  checked={formData.gender === "Male"}
+                  onChange={handleChange}
+                />{" "}
+                Male
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="gender"
+                  value="Female"
+                  checked={formData.gender === "Female"}
+                  onChange={handleChange}
+                />
+                Female
+              </label>
+            </div>
+
+            <button type="submit" className="btn">
+              {editId ? "Update" : "Submit"}
+            </button>
+          </form>
         </div>
 
-        <div className='form-group'>
-          <input
-            className=''
-            type="tel"
-            placeholder='Mobile Number'
-            value={mobileNumber}
-            onChange={(e) => setMobileNumber(e.target.value)}
-            required
-             />
-        </div>
-            <select className='hero' name="course" id="course" value={course} onChange={(e) => setCourse(e.target.value)}>
-              <option value="">Select Course</option>
-              <option value="Web">Web Developer</option>
-              <option value="App">App Developer</option>
-              <option value="Data">Data Scientist</option>
-              <option value="AI">AI Engineer</option>
-              <option value="other">Other</option>
-            </select>
+        <div className="glass-card">
+          <h2>Student List</h2>
+          {studentData.map((student) => (
+            <div key={student.id} className="student-card">
+              <h3>
+                Name: {student.firstname} {student.lastName}
+              </h3>
+              <p>Mobile Number: {student.mobile}</p>
+              <p>Course: {student.course}</p>
+              <p>Gender: {student.gender}</p>
 
-            <input type="radio" name="gender" value="male" onChange={(e) => setGender(e.target.value)} />Male
-            <input type="radio" name="gender" value="female" onChange={(e) => setGender(e.target.value)} />Female
-            <button type='submit'>Submit</button>
-          </form>        
+              <button className="btn" onClick={() => handleDelete(student.id)}>
+                Delete
+              </button>
+              <button className="btn" onClick={() => handleEdit(student)}>
+                Edit
+              </button>
+            </div>
+          ))}
+          {toast && (
+            <div className="toast" aria-live="assertive">
+              {toast}
+            </div>
+          )}
+        </div>
+      </div>
     </>
-  )
+  );
 }
 
-export default App
+export default App;

@@ -6,7 +6,7 @@ function App() {
     firstname: "",
     lastName: "",
     mobile: "",
-    course: "Web Developer",
+    course: "",
     gender: "",
   });
   const [studentData, setStudentData] = useState(()=>{

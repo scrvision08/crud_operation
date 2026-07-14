@@ -82,8 +82,6 @@ function App() {
   }, [studentData]);
 
   const handleDelete = (id) => {
-    console.log(id);
-    console.log(studentData);
     if (window.confirm("Are you sure you want to delete this record?")) {
       setStudentData(studentData.filter((student) => student.id !== id));
 

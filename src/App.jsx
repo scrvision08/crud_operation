@@ -5,7 +5,7 @@ function App() {
   const [formData, setFormData] = useState({
     firstname: "",
     lastName: "",
-    mobile: "1234567890",
+    mobile: "",
     course: "",
     gender: "",
   });
@@ -29,6 +29,10 @@ function App() {
     const mobileRegex = /^[0-9]{10}$/;
     if (!mobileRegex.test(formData.mobile)) {
       alert("Please enter a valid 10-digit mobile number.");
+      return;
+    }
+    if (!mobileRegex.test(formData.mobile)) {
+      alert("Please enter a unique mobile number.");
       return;
     }
 

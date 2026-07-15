@@ -5,24 +5,26 @@ function App() {
   const [formData, setFormData] = useState({
     firstname: "",
     lastName: "",
-    mobile: "",
+    mobile: "1234567890",
     course: "",
     gender: "",
   });
-  const [studentData, setStudentData] = useState(()=>{
+  const [studentData, setStudentData] = useState(() => {
     const savedData = localStorage.getItem("studentData");
+
     return savedData ? JSON.parse(savedData) : [];
   });
   const [toast, setToast] = useState("");
   const [editId, setEditId] = useState(null);
-
+  useEffect(() => {
+    localStorage.setItem("studentData", JSON.stringify(studentData));
+  }, [studentData]);
   const showToast = (message) => {
     setToast(message);
     setTimeout(() => {
       setToast("");
     }, 2000);
   };
-
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -31,7 +33,8 @@ function App() {
       alert("Please enter a valid 10-digit mobile number.");
       return;
     }
-    if (!mobileRegex.test(formData.mobile)) {
+    const mobileData = studentData.find((student) => student.mobile === formData.mobile );
+    if (mobileData) {
       alert("Please enter a unique mobile number.");
       return;
     }
@@ -53,7 +56,7 @@ function App() {
       setEditId(null);
       showToast("Record updated successfully!");
     } else {
-      setStudentData((prev)=>[
+      setStudentData((prev) => [
         ...prev,
         {
           id: Date.now(),
@@ -77,13 +80,6 @@ function App() {
       [e.target.name]: e.target.value,
     });
   };
-  useEffect(() => {
-    const storedData = JSON.parse(localStorage.getItem("studentData")) || [];
-    setStudentData(storedData);
-  }, []);
-  useEffect(() => {
-    localStorage.setItem("studentData", JSON.stringify(studentData));
-  }, [studentData]);
 
   const handleDelete = (id) => {
     if (window.confirm("Are you sure you want to delete this record?")) {
@@ -180,7 +176,7 @@ function App() {
 
             <div className="radio-group">
               <label>
-              <h3>Gender:</h3>
+                <h3>Gender:</h3>
                 <input
                   type="radio"
                   name="gender"

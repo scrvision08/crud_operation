@@ -5,7 +5,7 @@ function App() {
   const [formData, setFormData] = useState({
     firstname: "",
     lastName: "",
-    mobile: "1234567890",
+    mobile: "",
     course: "",
     gender: "",
   });
